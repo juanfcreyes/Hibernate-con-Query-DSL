@@ -1,0 +1,71 @@
+
+sourceSets {
+  generated
+}
+
+sourceSets.generated.java.srcDirs = ['src/main/generated']
+
+task packageSourcesQuerydsl(type: Jar) {
+  classifier = 'sources'
+  from sourceSets.main.allSource + sourceSets.generated.allSource
+}
+  
+artifacts.archives packageSourcesQuerydsl
+
+configurations {
+    querydslapt
+}
+
+task querydsl(type: JavaCompile, group: 'build', description: 'Generate the QueryDSL query types') {
+    source = sourceSets.main.java
+    classpath = configurations.compile + configurations.querydslapt
+    options.compilerArgs = [
+	    '-proc:only',
+		'-processor', 'com.querydsl.apt.jpa.JPAAnnotationProcessor,com.querydsl.apt.QuerydslAnnotationProcessor'
+    ]
+    destinationDir = sourceSets.generated.java.srcDirs.iterator().next()
+    outputs.dir destinationDir
+}
+
+compileJava.source querydsl.outputs.files
+
+clean {
+    delete sourceSets.generated.java.srcDirs
+}
+
+
+/*sourceSets {
+    generated
+}
+
+sourceSets.generated.java.srcDirs = ['src/main/generated']
+
+configurations {
+    querydslapt
+}
+
+dependencies {
+    querydslapt "com.querydsl:querydsl-apt:4.2.1"
+}
+
+task generateQueryDSL(type: JavaCompile, group: 'build', description: 'Generates the QueryDSL query types') {
+    source = sourceSets.main.java
+    classpath = configurations.compile + configurations.querydslapt
+    options.compilerArgs = [
+            "-proc:only",
+            "-processor", "com.querydsl.apt.jpa.JPAAnnotationProcessor,com.querydsl.apt.QuerydslAnnotationProcessor"
+    ]
+    destinationDir = sourceSets.generated.java.srcDirs.iterator().next()
+}
+
+compileJava {
+    dependsOn generateQueryDSL
+    source generateQueryDSL.destinationDir
+}
+
+compileGeneratedJava {
+    dependsOn generateQueryDSL
+    classpath += sourceSets.main.runtimeClasspath
+}*/
+
+
